@@ -8,7 +8,7 @@ export default function WaterControlComponent() {
   const { data, error, isLoading, mutate } = useSWR<WaterUsage>(
     'waterUsage',
     GetUseWaterControl,
-    { refreshInterval: 60000, revalidateOnFocus: true, fallbackData: undefined }
+    { refreshInterval: 5000, revalidateOnFocus: true, fallbackData: undefined }
   )
 
 
@@ -48,10 +48,11 @@ export default function WaterControlComponent() {
               <div className="mt-3 flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
                 <span>Última actualización: {data.lastUpdated ? new Date(data.lastUpdated).toLocaleString() : '—'}</span>
               </div>
+              
             </div>
 
             <div className="flex flex-col items-start md:items-end gap-3">
-              <div className="text-sm text-gray-600 dark:text-gray-300">Usuario: {data.userId}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">ID de usuario: {data.userId}</div>
               <button
                 onClick={() => mutate()}
                 className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700"

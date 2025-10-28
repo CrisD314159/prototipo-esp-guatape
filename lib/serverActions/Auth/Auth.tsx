@@ -1,37 +1,28 @@
-'use server'
 import { db } from "@/lib/Db/db";
 import { FormResponse } from "@/lib/types/types";
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
 
-export async function getLoggedUserId(){
-  const check = await checkIsLoggedIn()
-  if(!check) await Logout()
-  const id = (await cookies()).get('userId')?.value
+export function getLoggedUserId(){
+  const check = checkIsLoggedIn()
+  if(!check) Logout()
+  const id = localStorage.getItem('userId')
   if(!id) throw new Error("User id not found")
   return Number.parseInt(id, 10);
 }
 
-async function setCookie(id: number) {
-  const cookieStore = await cookies()
-
-  cookieStore.set('userId', id.toString(), {
-     httpOnly: true,
-     secure: false,
-     expires:  new Date(Date.now() + 1 * 60 * 60 * 1000),
-     path: '/',
-   })
+function setCookie(id: number) {
+  localStorage.setItem('userId', id.toString())
 }
 
-export async function Logout() {
-  (await cookies()).delete('userId')
+export function Logout() {
+  localStorage.clear()
   redirect('/')
 }
 
-export async function checkIsLoggedIn(): Promise<boolean> {
+export function checkIsLoggedIn() {
   // Check for a simple `userId` cookie and verify user exists in DB.
   try {
-    const userId = (await cookies()).get('userId')?.value
+    const userId = localStorage.getItem('userId')
     if(userId){
       return true
     }
@@ -41,43 +32,39 @@ export async function checkIsLoggedIn(): Promise<boolean> {
   }
 }
 
-export async function LogIn(_formstate: FormResponse, formdata: FormData){
-  const email = formdata.get("email")?.toString()
-  const password = formdata.get("password")?.toString()
-
-  try {
-    if (!email || !password) {
-      throw new Error('Email and password are required')
-    }
-
-    const user = await db.users.where('email').equals(email).first()
-    if (!user) {
-      throw new Error('User not found')
-    }
-
-    if (user.password && user.password !== password) {
-      throw new Error('Invalid credentials')
-    }
-
-    setCookie(user.id)
-    
-  } catch (error){
-    if(error instanceof Error)
-      return {
-        success: false,
-        message: error.message
-      }
-    
+export async function login(email: string, password: string) {
+  if (!email || !password) {
+    throw new Error('Email and password are required')
   }
-  redirect('/dashboard')
+
+  const user = await db.users.where('email').equals(email).first()
+  if (!user) {
+    throw new Error('User not found')
+  }
+
+  if (user.password && user.password !== password) {
+    throw new Error('Invalid credentials')
+  }
+
+  setCookie(user.id!)
+  return user
 }
 
 
-export async function CreateUser(name: string, email: string, address: string, password?: string): Promise<number> {
+export async function CreateUser(formsatate: FormResponse, formdata: FormData) {
   // Create a user record in the local Dexie DB. Throws on error, returns new id.
-  if (!email || !name) {
-    throw new Error('Name and email are required')
+  const name = formdata.get('name')?.toString()
+  const email = formdata.get('email')?.toString()
+  const address = formdata.get('address')?.toString()
+  const password = formdata.get('password')?.toString()
+
+  if(!name || !email || !address ){
+    return {
+      success: false,
+      message: 'Fill all the required fields and try again'
+    }
   }
+
 
   const existing = await db.users.where('email').equals(email).first()
   if (existing) {
@@ -99,5 +86,8 @@ export async function CreateUser(name: string, email: string, address: string, p
   })
 
 
-  return id
+  return {
+    success:true,
+    message: 'User created successfully'
+  }
 }

@@ -1,25 +1,32 @@
 'use client'
-import { LogIn } from "@/lib/serverActions/Auth/Auth"
-import { startTransition, useActionState, useEffect } from "react"
+import { login } from "@/lib/serverActions/Auth/Auth"
+import { useState } from "react"
+import { useRouter } from 'next/navigation'
 import toast from "react-hot-toast"
 
 
 export default function LoginForm() {
-  const [state, action, pending] = useActionState(LogIn, undefined)
+  const router = useRouter()
+  const [pending, setPending] = useState(false)
 
-  useEffect(()=>{
-    if(state?.success === false){
-        toast.error(state.message)
-    }
-  }, [state])
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const formdata = new FormData(event.currentTarget)
+ 
 
-    startTransition(() => {
-      action(formdata)
-    })
+    const formData = new FormData(event.currentTarget)
+    const email = formData.get('email')?.toString() || ''
+    const password = formData.get('password')?.toString() || ''
+
+    try {
+      setPending(true)
+      await login(email, password)
+      router.push('/dashboard')
+    } catch (e){
+      if(e instanceof Error) toast.error(e.message)
+    } finally {
+      setPending(false)
+    }
   }
 
 

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { startTransition, useActionState, useEffect, useState } from "react"
 import { X } from "lucide-react"
 import { FormResponse } from "@/lib/types/types"
+import { Plus } from 'lucide-react';
 import toast from "react-hot-toast"
 import { Report } from "@/lib/Db/db"
 
@@ -14,31 +15,42 @@ interface TextInputModalProps {
   }>
   title?: string
   placeholder?: string,
-  actionButtonTitle: string,
   entity?: Report,
   entityIdKey?: string,
   inputName: string
+  mutate: () => void
 }
 
 export default function FormDialog({
   SubmitMethod,
-  title = "Write something",
-  placeholder = "Your text here",
-  actionButtonTitle,
   entity,
   entityIdKey,
-  inputName
+  mutate
 }: TextInputModalProps) {
 
   const [state, action, isPending] = useActionState(SubmitMethod, undefined);
-  const [inputValue, setInputValue] = useState("")
   const [open, setOpen] = useState(false)
+
+  const handleOpen = () =>{
+    setOpen(true)
+
+  }
+  const handleClose = () =>{
+    setOpen(false)
+
+  }
 
   useEffect(()=>{
     if(state?.success === false) toast.error(state.message)
-    if(state?.success === true) toast.success(state.message)
+    if(state?.success === true) {
+      mutate()
+      toast.success(state.message)
+      startTransition(()=> {
+        setOpen(false)
+      })
+    }
 
-  }, [state])
+  }, [state, mutate])
 
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -55,19 +67,12 @@ export default function FormDialog({
 
   }
 
-  const handleOpen = () =>{
-    setOpen(true)
 
-  }
-  const handleClose = () =>{
-    setOpen(false)
-
-  }
 
   return (
     <>
-    <button className="btn btn-soft btn-primary" onClick={handleOpen}>
-      {actionButtonTitle}
+    <button className="btn btn-soft btn-primary rounded-full" onClick={handleOpen}>
+      <Plus/>
     </button>
     <AnimatePresence>
       {open && (
@@ -85,7 +90,7 @@ export default function FormDialog({
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
           >
             <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-lg">{title}</h3>
+              <h3 className="font-bold text-lg">Nuevo reporte</h3>
               <button onClick={handleClose} className="btn btn-sm btn-ghost">
                 <X className="w-5 h-5" />
               </button>
@@ -94,10 +99,16 @@ export default function FormDialog({
           <form onSubmit={handleSubmit}>
             <input
               type="text"
-              name={inputName}
-              placeholder={placeholder}
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
+              name="subject"
+              placeholder="Asunto"
+              className="input input-bordered w-full mb-4"
+              required
+            />
+
+            <input
+              type="text"
+              name="content"
+              placeholder="Motivo"
               className="input input-bordered w-full mb-4"
               required
             />

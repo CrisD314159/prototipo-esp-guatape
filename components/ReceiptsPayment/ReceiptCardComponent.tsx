@@ -16,7 +16,9 @@ export default function ReceiptCardComponent({ receipt, mutate }: ReceiptCardCom
 
   async function handlePay() {
     if (paid) return
-    setLoading(true)
+    const ok = confirm("Estas seguro de pagar tu factura?")
+    if(!ok) return
+      setLoading(true)
     try {
       const now = new Date().toISOString()
       await db.receipts.update(receipt.id, { alreadyPaid: true, paymentDate: now })

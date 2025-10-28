@@ -1,5 +1,3 @@
-'use server'
-
 import { db, Receipt } from "@/lib/Db/db"
 import { getLoggedUserId } from "../Auth/Auth"
 import { GetUseWaterControl } from "../WaterActions/WaterActions"
@@ -14,7 +12,7 @@ export async function PayReceipt(receiptId: number) {
 }
 
 export async function GetPendingReceipts() {
-  const userId = await getLoggedUserId()
+  const userId = getLoggedUserId()
 
   const receipts:Receipt[] = await db.receipts.where('userId').equals(userId).and((r) => !r.alreadyPaid).toArray()
 
@@ -43,7 +41,7 @@ export async function GetPendingReceipts() {
 }
 
 export async function GetPaidReceipts() {
-  const userId = await getLoggedUserId()
+  const userId = getLoggedUserId()
 
   const receipts = await db.receipts.where('userId').equals(userId).and((r) => !!r.alreadyPaid).toArray()
 

@@ -1,10 +1,9 @@
-'use server'
 
 import { db } from "@/lib/Db/db";
 import { getLoggedUserId } from "../Auth/Auth"
 
 export async function GetUseWaterControl() {
-  const userId = await getLoggedUserId();
+  const userId = getLoggedUserId();
  
 
   const userWaterUsage = await db.waterUsages.where('userId').equals(userId).first();
@@ -12,7 +11,8 @@ export async function GetUseWaterControl() {
   const delta = Math.random() * (40 - (-40)) + (-40);
 
   if(!userWaterUsage) throw new Error("No usage found");
-  const newUsage = (userWaterUsage.usage ?? 0) + delta;
+  let newUsage = (userWaterUsage.usage ?? 0) + delta;
+  if(newUsage < 5) newUsage = 70.8723846234
 
 
   await db.waterUsages.update(userWaterUsage.id, { usage: newUsage });

@@ -1,8 +1,7 @@
-'use server'
-
 import { FormResponse } from "@/lib/types/types";
 import { getLoggedUserId } from "../Auth/Auth";
 import { db} from "@/lib/Db/db";
+import { generateGeminiReply } from "./ReportAIAnswer";
 
 const agents =[
   "Valeria Torres",
@@ -17,25 +16,49 @@ const agents =[
 
 export async function CreateReport(formstate: FormResponse, formdata: FormData ) {
 
-  const userId = await getLoggedUserId()
+  const userId = getLoggedUserId()
   
-  const subject = formdata.get('subject')?.toString()
-  const content = formdata.get('content')?.toString()
+  try {
+    const subject = formdata.get('subject')?.toString()
+    const content = formdata.get('content')?.toString()
 
-  const minCeiled = Math.ceil(0);
-  const maxFloored = Math.floor(7);
-  const randomAgentPosition = Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled); 
-  const agentName = agents[randomAgentPosition]
+    if(!subject || !content) throw new Error("Fill all required values")
 
-  await db.reports.add({
-    subject: subject ?? '',
-    reportContent: content ?? '',
-    dateCreated: new Date().toISOString(),
-    agent: agentName,
-    answer:"",
-    userId: userId,
-    status: 'open'
-  })
+    const minCeiled = Math.ceil(0);
+    const maxFloored = Math.floor(7);
+    const randomAgentPosition = Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled); 
+    const agentName = agents[randomAgentPosition]
+
+    const aiAnswer = await generateGeminiReply(subject, content)
+    console.log(aiAnswer)
+
+    await db.reports.add({
+      subject: subject ?? '',
+      reportContent: content ?? '',
+      dateCreated: new Date().toISOString(),
+      agent: agentName,
+      answer:aiAnswer,
+      userId: userId,
+      status: 'closed'
+    })
+
+    return {
+        success:true,
+        message:"Report created successfully"
+    }
+  } catch (error) {
+    if(error instanceof Error){
+      return {
+        success:false,
+        message:error.message
+      }
+    }
+    
+  }
+  return {
+    success:false,
+    message:"An unexpected error occured"
+  }
 }
 export async function UpdateReport(formstate: FormResponse, formdata: FormData ){
 
