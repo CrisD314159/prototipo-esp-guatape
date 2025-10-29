@@ -24,10 +24,13 @@ export function checkIsLoggedIn() {
   try {
     const userId = localStorage.getItem('userId')
     if(userId){
+      
       return true
     }
     return false
-  } catch {
+  } catch (error){
+    console.log(error)
+    
     return false
   }
 }
@@ -68,7 +71,10 @@ export async function CreateUser(formsatate: FormResponse, formdata: FormData) {
 
   const existing = await db.users.where('email').equals(email).first()
   if (existing) {
-    throw new Error('User already exists')
+    return {
+      success: false,
+      message: 'User already exists'
+    }
   }
 
   const id = await db.users.add({

@@ -1,17 +1,24 @@
 'use client'
 
 import { CreateUser } from "@/lib/serverActions/Auth/Auth"
+import { useRouter } from "next/navigation"
 import { startTransition, useActionState, useEffect } from "react"
 import toast from "react-hot-toast"
 
 export default function SignUpForm() {
   const [state, action, pending] = useActionState(CreateUser, undefined)
+  const router = useRouter()
 
   useEffect(()=>{
+    
     if(state?.success === false){
       toast.error(state.message)
     }
-  }, [state])
+    if(state?.success === true){
+      toast.success("User created successfully")
+      router.push('/dashboard')
+    }
+  }, [state, router])
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()

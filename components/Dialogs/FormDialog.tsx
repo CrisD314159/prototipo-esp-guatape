@@ -54,7 +54,10 @@ export default function FormDialog({
 
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+
     e.preventDefault()
+    toast.loading("Resolviendo tu reporte usando IA", {duration:6000})
+  
 
     const formdata = new FormData(e.currentTarget)
     if(entityIdKey && entity){
@@ -64,6 +67,7 @@ export default function FormDialog({
     startTransition(()=> {
       action(formdata)
     })
+    
 
   }
 

@@ -22,7 +22,7 @@ export default function ReportCardComponent({report}:ReportCardComponentProps) {
   }
 
   return (
-    <article className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+    <article className="p-4 mt-5 bg-white dark:bg-gray-800 rounded-lg shadow-sm flex flex-col md:flex-row md:items-start md:justify-between gap-4">
       <div className="flex-1">
         <div className="flex items-center gap-3">
           <h3 className="text-lg font-semibold">{report.subject}</h3>
