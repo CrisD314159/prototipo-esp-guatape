@@ -16,7 +16,7 @@ export default function SignUpForm() {
     }
     if(state?.success === true){
       toast.success("User created successfully")
-      router.push('/dashboard')
+      router.push('/')
     }
   }, [state, router])
 
